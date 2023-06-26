@@ -1,0 +1,48 @@
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table th,
+  .table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Media query for responsive design */
+  @media (max-width: 600px) {
+    .table thead {
+      display: none;
+    }
+    
+    .table,
+    .table tbody,
+    .table tr,
+    .table td {
+      display: block;
+      width: 100%;
+    }
+  
+    .table tr {
+      border: 1px solid lightgrey;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 1px 5px 20px 4px rgb(0 0 0 / 15%);
+    }
+    
+    .table td {
+      border-bottom: none;
+      text-align: center;
+    }
+    
+    .table td:before {
+      content: attr(data-label);
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      display: block;
+    }
+    
+  }
