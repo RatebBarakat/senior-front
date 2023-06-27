@@ -13,7 +13,8 @@ import './css/sniper.css';
 const app = createApp(App);
 app.use(store);
 app.use(Toast, {
-    position: POSITION.TOP_RIGHT
+    position: POSITION.TOP_RIGHT,
+    defadefaultDuration: 4000,
 });
 app.use(router);
 app.mount('#app');

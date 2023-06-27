@@ -6,10 +6,12 @@
         <div id="mySidebar" class="bg-primary" :class="['sidebar', { 'sidebar-open': isSidebarOpen }]">
           <a href="javascript:void(0)" class="closebtn" @click="toggleSidebar">&times;</a>
           <div class="mt-5">
-            <router-link :to="{ name: 'dashboard' }" :class="{ active: $route.name === 'dashboard' }"
+            <router-link :to="{ name: 'dashboard' }" @click="this.isSidebarOpen = false" :class="{ active: $route.name === 'dashboard' }"
               class="nav-link">Dashboard</router-link>
-            <router-link :to="{ name: 'appointment' }" :class="{ active: $route.name === 'appointment' }"
+            <router-link :to="{ name: 'appointment' }" @click="this.isSidebarOpen = false" :class="{ active: $route.name === 'appointment' }"
               class="nav-link">Appointments</router-link>
+            <router-link :to="{ name: 'requests' }" @click="this.isSidebarOpen = false" :class="{ active: $route.name === 'requests' }"
+              class="nav-link">blood requests</router-link>
             <button @click="logout" type="button">Logout</button>
           </div>
         </div>
@@ -48,9 +50,9 @@ export default {
     },
   },
   created() {
-    setTimeout(() => {
+    // setTimeout(() => {
       this.isLoading = false;
-    }, 1500);
+    // }, 1500);
   },
 };
 </script>

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from '../components/Dashboard.vue';
 import AppLayout from '../components/AppLayout.vue';
 import Appointment from '../components/Appointment.vue';
+import BloodRequest from '../components/BloodRequest.vue';
 import Login from '../components/Login.vue';
 import NotFound from '../components/NotFound.vue';
 import store from '../store/index';
@@ -36,6 +37,14 @@ const routes = [
         path: '/appointment',
         name: 'appointment',
         component: Appointment,
+        meta: {
+          requireAuth: true
+        },
+      },
+      {
+        path: '/blood-request',
+        name: 'requests',
+        component: BloodRequest,
         meta: {
           requireAuth: true
         },

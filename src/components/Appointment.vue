@@ -2,13 +2,14 @@
   <div class="container">
     <div class="container mt-4">
       <button @click="showAddModal()"
-        class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        class="block text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         type="button">
         add appointment
       </button>
-      <table class="table mt-4">
+      <div class="table-responsive">
+        <table class="table mt-4">
         <thead>
-          <tr>
+          <tr class="bg-blue-500 text-white">
             <th>status</th>
             <th>date</th>
             <th>time</th>
@@ -40,24 +41,25 @@
             <td>{{ appointment.blood_type }}</td>
             <td>{{ appointment.quantity ?? "not completed" }}</td>
             <td>
-              <button @click="editAppointment(appointment.id)"
-                class="bg-transparent mr-2 hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+              <button v-if="appointment.status == 'scheduled'" @click="editAppointment(appointment.id)" 
+              class="rounded px-4 py-1 text-sm border border-green-500 text-green-500 hover:bg-green-500 hover:text-blue-100 duration-300">
                 Edit
               </button>
-              <button @click="deleteAppointment(appointment.id)"
-                class="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded">
+              <button v-if="appointment.status == 'scheduled'" @click="deleteAppointment(appointment.id)"
+              class="rounded px-4 py-1 text-sm border border-red-500 text-red-500 hover:bg-red-500 hover:text-blue-100 duration-300">
                 Delete
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+      </div>
+      
     </div>
   </div>
 
-
-
-  <div v-if="isAddModalVisible == true" class="modal">
+  <!-- <transition name="fade"> -->
+  <div v-if="isAddModalVisible == true" class="modal modal-fade animated fadeInUp">
     <div class="modal-content">
       <div class="modal-header">
         <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -125,7 +127,9 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
           </div>
           <div class="modal-footer">
-            <button type="submit" class="accept-button">submit</button>
+            <button :disabled="isProcessing === 'add'" type="submit" class="accept-button">
+              {{ isProcessing === 'add' ? 'Processing' : 'Submit' }}
+            </button> 
             <button type="button" @click="isAddModalVisible = false" class="decline-button">
               close
             </button>
@@ -134,8 +138,12 @@
       </div>
     </div>
   </div>
-  <div v-if="Object.keys(editedAppointment).length !== 0"><!--edit modal-->
-    <div v-if="isEditModalVisible == true" class="modal">
+  <!-- </transition> -->
+
+  <div v-if="Object.keys(editedAppointment).length !== 0">
+    <!--edit modal-->
+    <!-- <transition name="fade"> -->
+    <div v-if="isEditModalVisible == true" class="modal modal-fade">
       <div class="modal-content">
         <div class="modal-header">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -212,6 +220,7 @@
         </div>
       </div>
     </div>
+    <!-- </transition> -->
   </div>
 </template>
 
@@ -226,6 +235,7 @@ export default {
   name: "AppointmentPage",
   data() {
     return {
+      isProcessing: "false",
       isLoading: false,
       appointments: [],
       newAppointment: {
@@ -234,15 +244,12 @@ export default {
         time: "",
         blood_type: "",
       },
-      editedAppointment: {
-      },
-      bloodTypes: [
-        "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-",
-      ],
+      editedAppointment: {},
+      bloodTypes: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
       errors: {},
       centers: {},
       isAddModalVisible: false,
-      isEditModalVisible: false
+      isEditModalVisible: false,
     };
   },
   mounted() {
@@ -255,11 +262,9 @@ export default {
   },
   methods: {
     async fetchCenters() {
-      await axios.get('http://127.0.0.1:8000/api/centers')
-        .then((response) => {
-          this.centers = response.data.data;
-          console.log('response :>> ', response.data.data);
-        })
+      await axios.get("http://127.0.0.1:8000/api/centers").then((response) => {
+        this.centers = response.data.data;
+      });
     },
     async fetchAppointments() {
       this.isLoading = true;
@@ -270,7 +275,8 @@ export default {
           },
         })
         .then((response) => {
-          this.appointments = response.data.data.appointments;
+          this.appointments = response.data.data;
+          console.log('response.data.data :>> ', this.appointments);
         })
         .catch((error) => {
           console.log("error", error);
@@ -292,6 +298,7 @@ export default {
       this.isAddModalVisible = true;
     },
     async addAppointment() {
+      this.isProcessing = "add";
       await axios
         .post(
           "http://127.0.0.1:8000/api/user/appointment",
@@ -307,29 +314,34 @@ export default {
           this.newAppointment.date = "";
           this.newAppointment.time = "";
           useToast().success(response.data.message, {
-            timeout: 2000
+            timeout: 2000,
           });
           this.isAddModalVisible = false;
           this.fetchAppointments();
         })
         .catch((error) => {
-          console.log('error :>> ', error);
+          console.log("error :>> ", error);
           if (
             error.response &&
             error.response.status === 400 &&
             error.response.data
           ) {
             this.errors = error.response.data;
-            console.log('errors :>> ', this.errors);
+            console.log("errors :>> ", this.errors);
           }
+        })
+        .finally(() => {
+          this.isProcessing = "";
         });
     },
     async editAppointment(appointmentId) {
-      await axios.get(`http://127.0.0.1:8000/api/user/appointment/${appointmentId}`, {
-        headers: {
-          Authorization: `Bearer ${this.$store.getters.getUserToken}`,
-        },
-      })
+      this.errors = {};
+      await axios
+        .get(`http://127.0.0.1:8000/api/user/appointment/${appointmentId}`, {
+          headers: {
+            Authorization: `Bearer ${this.$store.getters.getUserToken}`,
+          },
+        })
         .then((response) => {
           if (response.data.data) {
             this.editedAppointment = response.data.data;
@@ -337,7 +349,7 @@ export default {
           }
         })
         .catch((error) => {
-          console.log('error :>> ', error);
+          console.log("error :>> ", error);
         });
     },
     updateAppointment() {
@@ -347,14 +359,15 @@ export default {
         date: this.editedAppointment.date,
         time: this.editedAppointment.time,
       };
-      console.table(appointment);
       axios
         .put(
-          `http://127.0.0.1:8000/api/user/appointment/${this.editedAppointment.id}`, appointment, {
-          headers: {
-            Authorization: `Bearer ${this.$store.getters.getUserToken}`,
-          },
-        }
+          `http://127.0.0.1:8000/api/user/appointment/${this.editedAppointment.id}`,
+          appointment,
+          {
+            headers: {
+              Authorization: `Bearer ${this.$store.getters.getUserToken}`,
+            },
+          }
         )
         .then((response) => {
           console.log("response :>> ", response);
@@ -374,23 +387,26 @@ export default {
     deleteAppointment(appointmentId) {
       if (confirm("Are you sure you want to delete this appointment?")) {
         axios
-          .delete(`http://127.0.0.1:8000/api/user/appointment/${appointmentId}`, {
-            headers: {
-              Authorization: `Bearer ${this.$store.getters.getUserToken}`,
-            },
-          })
+          .delete(
+            `http://127.0.0.1:8000/api/user/appointment/${appointmentId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${this.$store.getters.getUserToken}`,
+              },
+            }
+          )
           .then((response) => {
             console.log("response :>> ", response);
             this.fetchAppointments();
             useToast().success(response.data.message, {
-              timeout: 2000
+              timeout: 2000,
             });
           })
           .catch((error) => {
             if (error.response.data.message) {
-              console.log('message :>> ');
+              console.log("message :>> ");
               useToast().error(error.response.data.message, {
-                timeout: 2000
+                timeout: 2000,
               });
             }
           });
@@ -403,4 +419,14 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 500ms ease-out;
+}
+</style>

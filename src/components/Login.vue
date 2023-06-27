@@ -1,7 +1,57 @@
 <template>
   <div class="container">
     <h2 class="mt-5">Login</h2>
-    <form @submit="submitForm" method="post" class="mt-3">
+    <section class="bg-gray-50 dark:bg-gray-900">
+      <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+          <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+              login    
+          </a>
+          <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+              <div id="login-container" class="p-6 space-y-4 md:space-y-6 sm:p-8">
+                  <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                      Sign in to your account
+                  </h1>
+                  <form @submit="login" method="post" class="space-y-4 md:space-y-6" action="#">
+                      <div>
+                          <div v-if="error.general" class="text-red-500">
+                            {{ error.general[0] }}
+                          </div>
+                          <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
+                          <div v-if="error.email" class="text-red-500">
+                            {{ error.email[0] }}
+                          </div>
+                          <input type="email" v-model="email" name="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" required="false">
+                      </div>
+                      <div>
+                          <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
+                          <div v-if="error.password" class="text-red-500">
+                            {{ error.password[0] }}
+                          </div>
+                          <input type="password" v-model="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required="false">
+                      </div>
+                      <div class="flex items-center justify-between">
+                          <div class="flex items-start">
+                              <div class="flex items-center h-5">
+                                <input id="remember" aria-describedby="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800" required="false">
+                              </div>
+                              <div class="ml-3 text-sm">
+                                <label for="remember" class="text-gray-500 dark:text-gray-300">Remember me</label>
+                              </div>
+                          </div>
+                          <a href="#" class="text-sm font-medium text-blue-600 hover:underline dark:text-blue-500">Forgot password?</a>
+                      </div>
+                      <button v-if="!this.processing" type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sign in</button>
+                      <button v-if="this.processing" disabled type="button" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">processing</button>
+                      
+                      <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+                          Don’t have an account yet? <a href="#" class="font-medium text-blue-600 hover:underline dark:text-blue-500">Sign up</a>
+                      </p>
+                  </form>
+              </div>
+          </div>
+      </div>
+    </section>
+    <!-- <form @submit="login" method="post" class="mt-3">
       <div class="form-group">
         <div v-if="error.general" class="text-danger">{{ error.general[0] }}</div>
         <label for="email">Email:</label>
@@ -16,13 +66,13 @@
         <input type="password" id="password" v-model="password" class="form-control" />
       </div>
       <div v-if="this.processing" class="text-danger">
-        <button type="button" disabled class="btn btn-primary">processing</button>
+        <button type="button" disabled class="btn btn-blue">processing</button>
       </div>
       <div v-if="!this.processing" class="text-danger">
-        <button type="submit" class="btn btn-primary">Login</button>
+        <button type="submit" class="btn btn-blue">Login</button>
       </div>
       <router-link class="btn btn-sm" to="/dashboard">Go to Dashboard</router-link>
-    </form>
+    </form> -->
   </div>
 </template>
 
@@ -41,7 +91,7 @@ export default {
     };
   },
   methods: {
-    async submitForm(event) {
+    async login(event) {
       event.preventDefault();
 
       const loginData = {
@@ -79,4 +129,9 @@ export default {
 };
 </script>
 
+<style>
+#login-container{
+  box-shadow: 0 0 15px 10px rgba(0,0,0,0.05);
+}
+</style>
 
