@@ -1,11 +1,20 @@
 <template>
   <div class="container">
     <div class="container mt-4">
-      <button @click="showAddModal()"
-        class="block text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-        type="button">
-        add appointment
-      </button>
+      <div class="flex justify-between items-center px-3">
+        <button @click="showAddModal()"
+          class="block text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          type="button">
+          add appointment
+        </button>
+
+        <button @click="fetchAppointments" type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#3b82f6" viewBox="0 0 24 24">
+            <path
+              d="M13.5 2c-5.621 0-10.211 4.443-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z" />
+          </svg>
+        </button>
+      </div>
       <div class="table-responsive">
         <table class="table mt-4">
         <thead>
@@ -39,7 +48,7 @@
             <td>{{ appointment.time }}</td>
             <td>{{ appointment.center?.name }}</td>
             <td>{{ appointment.blood_type }}</td>
-            <td>{{ appointment.quantity ?? "not completed" }}</td>
+            <td>{{ appointment.quantity }}</td>
             <td>
               <button v-if="appointment.status == 'scheduled'" @click="editAppointment(appointment.id)" 
               class="rounded px-4 py-1 text-sm border border-green-500 text-green-500 hover:bg-green-500 hover:text-blue-100 duration-300">
@@ -288,6 +297,7 @@ export default {
         })
         .finally(() => {
           this.isLoading = false;
+          console.log(this.appointments);
         });
     },
     showAddModal() {
@@ -345,7 +355,10 @@ export default {
         .then((response) => {
           if (response.data.data) {
             this.editedAppointment = response.data.data;
-            this.isEditModalVisible = true;
+            if(this.editedAppointment.status != 'scheduled'){
+              useToast().info('this appointemnt is complete and cannot be edited');
+              this.fetchAppointments()
+            }else this.isEditModalVisible = true;
           }
         })
         .catch((error) => {

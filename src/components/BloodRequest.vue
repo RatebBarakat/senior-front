@@ -456,7 +456,10 @@ export default {
         .then((response) => {
           if (response.data.data) {
             this.editedbloodRequest = response.data.data;
-            this.isEditModalVisible = true;
+            if (this.editedbloodRequest.status != "pending") {
+              useToast().info('this request is completed so you cannot edit it');
+              this.fetchbloodRequests();
+            }else this.isEditModalVisible = true;
           }
         })
         .catch((error) => {

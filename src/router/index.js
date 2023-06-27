@@ -4,7 +4,9 @@ import AppLayout from '../components/AppLayout.vue';
 import Appointment from '../components/Appointment.vue';
 import BloodRequest from '../components/BloodRequest.vue';
 import Login from '../components/Login.vue';
+import Register from '../components/Register.vue';
 import NotFound from '../components/NotFound.vue';
+import EmailVerification from '../components/EmailVerification.vue';
 import store from '../store/index';
 
 const routes = [
@@ -58,6 +60,22 @@ const routes = [
     meta: {
       requireGuest: true
     },
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: Register,
+    meta: {
+      requireGuest: true
+    },
+  },
+  {
+    path : '/verify-email',
+    name : 'verify',
+    component : EmailVerification,
+    meta : {
+      requireGuest : true
+    }
   },
   {
     path: '/:pathMatch(.*)*',
