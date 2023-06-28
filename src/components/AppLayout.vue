@@ -1,18 +1,40 @@
 <template>
   <div>
     <div v-if="!isLoading">
+      <header class="flex p-2 items-center justify-between">
+        <div class="left">
+            <button class="openbtn bg-blue-500 mt-2 bg-primary" @click="toggleSidebar">&#9776;</button>
+        </div>
+        <div class="right flex items-center">
+            <div class="messages">
+                <span>
+                    Notifications
+                </span>
+            </div>
+            <div class="user-info relative">
+                <button class="block m-2 overflow-hidden focus:outline-none text-sm leading-loose align-middle px-4 py-1 rounded cursor-pointer text-sm bg-blue-500 text-white" @click="isDropdownOpen = !isDropdownOpen">
+                  {{ user.name }} <i class="fa fas fa-sort-down"></i>
+                </button>
+                <button v-if="isDropdownOpen" @click="isDropdownOpen = false" tabindex="-1" class="fixed top-0 inset-0 h-full w-full bg-black opacity-0 cursor-default"></button>
+                <div v-if="isDropdownOpen" class="z-20 absolute top-full right-0 mt-2 w-48 py-2 rounded-lg border-gray-900 bg-white shadow-xl">
+                  <router-link :to="{ name : 'profile' }" @click="isDropdownOpen = false" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">profile</router-link>
+                  <router-link to="" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">Support</router-link>
+                  <div @click="logout" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">Sign Out</div>
+              </div>              
+            </div>
+        </div>
+    </header>
+    
       <div class="container-fluid h-screen">
-        <button class="openbtn mt-2 bg-primary" @click="toggleSidebar">&#9776;</button>
-        <div id="mySidebar" class="bg-primary" :class="['sidebar', { 'sidebar-open': isSidebarOpen }]">
+        <div id="mySidebar" class="bg-primary" :class="['sidebar','bg-blue-500', { 'sidebar-open': isSidebarOpen }]">
           <a href="javascript:void(0)" class="closebtn" @click="toggleSidebar">&times;</a>
           <div class="mt-5">
-            <router-link :to="{ name: 'dashboard' }" @click="this.isSidebarOpen = false" :class="{ active: $route.name === 'dashboard' }"
-              class="nav-link">Dashboard</router-link>
-            <router-link :to="{ name: 'appointment' }" @click="this.isSidebarOpen = false" :class="{ active: $route.name === 'appointment' }"
-              class="nav-link">Appointments</router-link>
-            <router-link :to="{ name: 'requests' }" @click="this.isSidebarOpen = false" :class="{ active: $route.name === 'requests' }"
-              class="nav-link">blood requests</router-link>
-            <button @click="logout" type="button">Logout</button>
+            <router-link :to="{ name: 'dashboard' }" @click="this.isSidebarOpen = false"
+              :class="{ active: $route.name === 'dashboard' }" class="nav-link">Dashboard</router-link>
+            <router-link :to="{ name: 'appointment' }" @click="this.isSidebarOpen = false"
+              :class="{ active: $route.name === 'appointment' }" class="nav-link">Appointments</router-link>
+            <router-link :to="{ name: 'requests' }" @click="this.isSidebarOpen = false"
+              :class="{ active: $route.name === 'requests' }" class="nav-link">blood requests</router-link>
           </div>
         </div>
 
@@ -29,33 +51,72 @@
 
 
 <script>
-import router from '@/router';
+import router from "@/router";
 import "../css/sidebar.css";
+import axios from "axios";
 
 export default {
   name: "AppLayout",
   data() {
     return {
+      user: {},
       isSidebarOpen: false,
+      isDropdownOpen: false,
       isLoading: true,
     };
   },
+  mounted() {
+    this.fetchUserData();
+  },
+  computed: {
+    userName() {
+      // store.emit("");
+      this.$store.fetchUserData;
+      console.log('object :>> ', this.$store.getters.getUserData);
+      const user = this.$store.getters.getUserData;
+      if (user && user.name) {
+        return user.name;
+      }
+      return null;
+    },
+  },
   methods: {
+    logout() {
+      this.$store.commit("LOGOUT");
+      router.push({ name: "login" });
+    },
+    async fetchUserData() {
+      try {
+        this.isLoading = true;
+        const response = await axios.get("http://127.0.0.1:8000/api/user", {
+          headers: {
+            Authorization: `Bearer ${this.$store.getters.getUserToken}`,
+          },
+        });
+        const userData = response.data;
+        this.$store.commit("SET_USER", userData);
+        this.user = userData;
+        console.log('done');
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        this.$store.commit("LOGOUT");
+        router.push({ name: "login" });
+      } finally {
+        this.isLoading = false;
+      }
+    },
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen;
-    },
-    logout() {
-      this.$store.commit('LOGOUT');
-      router.push('/login');
     },
   },
   created() {
     // setTimeout(() => {
-      this.isLoading = false;
+    this.isLoading = false;
     // }, 1500);
   },
 };
 </script>
+
 <style scoped>
 .spinner {
   border: 4px solid rgba(0, 0, 0, 0.1);

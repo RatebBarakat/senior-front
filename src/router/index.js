@@ -5,6 +5,7 @@ import Appointment from '../components/Appointment.vue';
 import BloodRequest from '../components/BloodRequest.vue';
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
+import Profile from '../components/Profile.vue';
 import NotFound from '../components/NotFound.vue';
 import EmailVerification from '../components/EmailVerification.vue';
 import store from '../store/index';
@@ -31,6 +32,14 @@ const routes = [
         path: '/dashboard',
         name: 'dashboard',
         component: Dashboard,
+        meta: {
+          requireAuth: true
+        },
+      },
+      {
+        path: '/profile',
+        name: 'profile',
+        component: Profile,
         meta: {
           requireAuth: true
         },

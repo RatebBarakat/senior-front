@@ -2,13 +2,13 @@
   <div class="container">
     <div class="container mt-4">
       <div class="flex justify-between items-center px-3">
-        <button @click="showAddModal()"
+        <button :disabled="isLoading == true" @click="showAddModal()"
           class="block text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           type="button">
           add bloodRequest
         </button>
 
-        <button @click="fetchbloodRequests" type="button">
+        <button :disabled="isLoading == true" @click="fetchbloodRequests" type="button">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#3b82f6" viewBox="0 0 24 24">
             <path
               d="M13.5 2c-5.621 0-10.211 4.443-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z" />
@@ -17,7 +17,13 @@
       </div>
       <div class="table-responsive">
         <table class="table mt-4">
-          <thead>
+
+          <thead v-if="isLoading">
+            <tr  class="bg-blue-500 text-white">
+              <th>loading...</th>
+            </tr>
+          </thead>
+          <thead v-else>
             <tr class="bg-blue-500 text-white">
               <th>patient name</th>
               <th>hospital name</th>
@@ -382,7 +388,6 @@ export default {
           this.bloodRequests = response.data.data;
         })
         .catch((error) => {
-          console.log("error", error);
           if (error.response?.status === 401) {
             console.log("401 :>> ");
             this.$store.commit("LOGOUT");
@@ -430,6 +435,11 @@ export default {
           this.fetchbloodRequests();
         })
         .catch((error) => {
+          if (error.response?.status === 401) {
+            console.log("401 :>> ");
+            this.$store.commit("LOGOUT");
+            router.push("/login");
+          }
           if (error.response && error.response.status === 400 && error.response.data) {
             this.errors = error.response.data;
           } else {
@@ -459,7 +469,7 @@ export default {
             if (this.editedbloodRequest.status != "pending") {
               useToast().info('this request is completed so you cannot edit it');
               this.fetchbloodRequests();
-            }else this.isEditModalVisible = true;
+            } else this.isEditModalVisible = true;
           }
         })
         .catch((error) => {
@@ -493,6 +503,11 @@ export default {
           this.fetchbloodRequests();
         })
         .catch((error) => {
+          if (error.response?.status === 401) {
+            console.log("401 :>> ");
+            this.$store.commit("LOGOUT");
+            router.push("/login");
+          }
           if (error.response && error.response.status === 400 && error.response.data) {
             this.errors = error.response.data;
             if (error.response.data.message) {
@@ -504,7 +519,7 @@ export default {
               const errorMessage = error.response.data.message.replace(/\n/g, ' ');
               const toastMessage = `${errorMessage} we choose the center ${this.editedbloodRequest.center.name} it has the needed quantity. Resubmit to proceed.`;
               useToast().info(toastMessage);
-            } 
+            }
             if (error.response.message) {
               useToast().info(error.response.message);
             }
@@ -533,6 +548,11 @@ export default {
             });
           })
           .catch((error) => {
+            if (error.response?.status === 401) {
+              console.log("401 :>> ");
+              this.$store.commit("LOGOUT");
+              router.push("/login");
+            }
             if (error.response.data.message) {
               useToast().error(error.response.data.message, {
                 timeout: 2000,
