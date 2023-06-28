@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div v-if="isLoading">
+    <div v-if="isLoading" class="flex items-center justify-center">
       <LoadingSnippet />
     </div>
     <div v-else>
@@ -66,12 +66,12 @@ export default {
       },
       image : "",
       bloodTypes: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-      isLoading: false,
+      isLoading: true,
     };
   },
 
   mounted() {
-    this.fetchProfile();
+    this.fetchProfile().then(() => {this.isLoading = false});
   },
   methods: {
     async fetchProfile() {

@@ -5,6 +5,7 @@ import Appointment from '../components/Appointment.vue';
 import BloodRequest from '../components/BloodRequest.vue';
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
+import Notification from '../components/Notification.vue';
 import Profile from '../components/Profile.vue';
 import NotFound from '../components/NotFound.vue';
 import EmailVerification from '../components/EmailVerification.vue';
@@ -56,6 +57,14 @@ const routes = [
         path: '/blood-request',
         name: 'requests',
         component: BloodRequest,
+        meta: {
+          requireAuth: true
+        },
+      },
+      {
+        path: '/notification',
+        name: 'notification',
+        component: Notification,
         meta: {
           requireAuth: true
         },

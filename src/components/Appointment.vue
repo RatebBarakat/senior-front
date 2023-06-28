@@ -267,16 +267,16 @@ export default {
     };
   },
   mounted() {
-    this.fetchAppointments();
     this.fetchCenters();
+    this.fetchAppointments();
   },
   setup() {
     const toast = useToast();
     return { toast };
   },
   methods: {
-    async fetchCenters() {
-      await axios.get("http://127.0.0.1:8000/api/centers").then((response) => {
+    fetchCenters() {
+      axios.get("http://127.0.0.1:8000/api/centers").then((response) => {
         this.centers = response.data.data;
       });
     },

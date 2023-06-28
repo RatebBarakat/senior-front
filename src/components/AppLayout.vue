@@ -7,17 +7,24 @@
         </div>
         <div class="right flex items-center">
             <div class="messages">
-                <span>
-                    Notifications
+                <span @click="dropdowns.notifications = !dropdowns.notifications">
+                    
                 </span>
+                <div class="user-info relative">
+                  <router-link to="notification" class="block m-2 overflow-hidden focus:outline-none text-sm leading-loose align-middle px-4 py-1 rounded cursor-pointer ">
+                    Notifications <span class="text-blue-500">[{{ unreadNotifications.length }}]</span> <i class="fa fas fa-sort-down"></i>
+                  </router-link>
+                            
+              </div>
+                
             </div>
             <div class="user-info relative">
-                <button class="block m-2 overflow-hidden focus:outline-none text-sm leading-loose align-middle px-4 py-1 rounded cursor-pointer text-sm bg-blue-500 text-white" @click="isDropdownOpen = !isDropdownOpen">
+                <button class="block m-2 overflow-hidden focus:outline-none leading-loose align-middle px-4 py-1 rounded cursor-pointer text-sm bg-blue-500 text-white" @click="dropdowns.userInfo = !dropdowns.userInfo">
                   {{ user.name }} <i class="fa fas fa-sort-down"></i>
                 </button>
-                <button v-if="isDropdownOpen" @click="isDropdownOpen = false" tabindex="-1" class="fixed top-0 inset-0 h-full w-full bg-black opacity-0 cursor-default"></button>
-                <div v-if="isDropdownOpen" class="z-20 absolute top-full right-0 mt-2 w-48 py-2 rounded-lg border-gray-900 bg-white shadow-xl">
-                  <router-link :to="{ name : 'profile' }" @click="isDropdownOpen = false" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">profile</router-link>
+                <button v-if="dropdowns.userInfo" @click="dropdowns.userInfo = false" tabindex="-1" class="fixed top-0 inset-0 h-full w-full bg-black opacity-0 cursor-default"></button>
+                <div v-if="dropdowns.userInfo" class="z-20 absolute top-full right-0 mt-2 w-48 py-2 rounded-lg border-gray-900 bg-white shadow-xl">
+                  <router-link :to="{ name : 'profile' }" @click="dropdowns.userInfo = false" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">profile</router-link>
                   <router-link to="" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">Support</router-link>
                   <div @click="logout" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">Sign Out</div>
               </div>              
@@ -61,13 +68,22 @@ export default {
     return {
       user: {},
       isSidebarOpen: false,
-      isDropdownOpen: false,
+      dropdowns : {
+        userInfo : false,
+        notifications : false,
+      },
       isLoading: true,
+      unreadNotifications : {},
     };
   },
   mounted() {
-    this.fetchUserData();
-  },
+  this.fetchUserData()
+    .then(() => this.fetchNotifications())
+    .finally(() => {
+      this.isLoading = false;
+    });
+},
+
   computed: {
     userName() {
       // store.emit("");
@@ -85,9 +101,22 @@ export default {
       this.$store.commit("LOGOUT");
       router.push({ name: "login" });
     },
+    async fetchNotifications() {
+      try{
+        const response = await axios.get("http://127.0.0.1:8000/api/user/notification?type=unread", {
+          headers: {
+            Authorization: `Bearer ${this.$store.getters.getUserToken}`,
+          },
+        });
+        console.log('response :>> ', response);
+        this.unreadNotifications = response.data.data[0];
+        console.log('object :>> ', this.unreadNotifications);
+      } catch (error) {
+        console.error("Failed :", error);
+      } 
+    },
     async fetchUserData() {
       try {
-        this.isLoading = true;
         const response = await axios.get("http://127.0.0.1:8000/api/user", {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
@@ -101,18 +130,11 @@ export default {
         console.error("Failed to fetch user data:", error);
         this.$store.commit("LOGOUT");
         router.push({ name: "login" });
-      } finally {
-        this.isLoading = false;
       }
     },
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen;
     },
-  },
-  created() {
-    // setTimeout(() => {
-    this.isLoading = false;
-    // }, 1500);
   },
 };
 </script>
