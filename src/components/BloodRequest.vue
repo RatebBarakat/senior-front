@@ -503,11 +503,12 @@ export default {
           this.fetchbloodRequests();
         })
         .catch((error) => {
-          if (error.response?.status === 401) {
-            console.log("401 :>> ");
-            this.$store.commit("LOGOUT");
-            router.push("/login");
-          }
+          console.log(error.response?.status);
+          // if (error.response?.status === 401) {
+          //   console.log("401 :>> ");
+          //   this.$store.commit("LOGOUT");
+          //   router.push("/login");
+          // }
           if (error.response && error.response.status === 400 && error.response.data) {
             this.errors = error.response.data;
             if (error.response.data.message) {
