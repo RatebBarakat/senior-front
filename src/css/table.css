@@ -12,6 +12,9 @@
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
+.table th{
+  width: max-content;
+}
 
 /* Media query for responsive design */
 /* @media (max-width: 600px) {
