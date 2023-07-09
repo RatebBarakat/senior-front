@@ -33,7 +33,8 @@
 
 <script>
 import LoadingSnippet from "./LoadingSnippet.vue";
-import axios from "axios";
+import axios from "../axios";
+import router from "@/router";
 
 export default {
   name: "notificationPage",
@@ -53,15 +54,17 @@ export default {
       let state = this.type === true ? "?type=unread" : "";
       this.isLoading = true;
       try{
-        const response = await axios.get(`http://127.0.0.1:8000/api/user/notification${state}`, {
+        const response = await axios.get(`/api/user/notification${state}`, {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
           },
         });
-        console.log('response :>> ', response);
         this.notifications = response.data.data[0];
       } catch (error) {
-        console.error("Failed :", error);
+        if (error.response?.status === 401) {
+            this.$store.commit("LOGOUT");
+            router.replace("/login");
+          }
       } finally {
         this.isLoading = false;
       }
