@@ -60,7 +60,7 @@
 <script>
 import router from "@/router";
 import "../css/sidebar.css";
-import axios from "axios";
+import axios from "../axios";
 
 export default {
   name: "AppLayout",
@@ -99,11 +99,11 @@ export default {
   methods: {
     logout() {
       this.$store.commit("LOGOUT");
-      router.push({ name: "login" });
+      router.replace({ name: "login" });
     },
     async fetchNotifications() {
       try{
-        const response = await axios.get("http://127.0.0.1:8000/api/user/notification?type=unread", {
+        const response = await axios.get("/api/user/notification?type=unread", {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
           },
@@ -117,7 +117,7 @@ export default {
     },
     async fetchUserData() {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/user", {
+        const response = await axios.get("/api/user", {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
           },
@@ -129,7 +129,7 @@ export default {
       } catch (error) {
         console.error("Failed to fetch user data:", error);
         this.$store.commit("LOGOUT");
-        router.push({ name: "login" });
+        router.replace({ name: "login" });
       }
     },
     toggleSidebar() {

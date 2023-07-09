@@ -330,7 +330,7 @@
 <script>
 import router from "@/router";
 import LoadingSnippet from "./LoadingSnippet.vue";
-import axios from "axios";
+import axios from "../axios";
 import "../css/table.css";
 import { useToast } from "vue-toastification";
 
@@ -372,14 +372,14 @@ export default {
   },
   methods: {
     async fetchCenters() {
-      await axios.get("http://127.0.0.1:8000/api/centers").then((response) => {
+      await axios.get("/api/centers").then((response) => {
         this.centers = response.data.data;
       });
     },
     async fetchbloodRequests() {
       this.isLoading = true;
       await axios
-        .get("http://127.0.0.1:8000/api/user/request", {
+        .get("/api/user/request", {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
           },
@@ -391,7 +391,7 @@ export default {
           if (error.response?.status === 401) {
             console.log("401 :>> ");
             this.$store.commit("LOGOUT");
-            router.push("/login");
+            router.replace("/login");
           }
         })
         .finally(() => {
@@ -406,7 +406,7 @@ export default {
       this.isProcessing = "add";
       await axios
         .post(
-          "http://127.0.0.1:8000/api/user/request",
+          "/api/user/request",
           this.newbloodRequest,
           {
             headers: {
@@ -438,7 +438,7 @@ export default {
           if (error.response?.status === 401) {
             console.log("401 :>> ");
             this.$store.commit("LOGOUT");
-            router.push("/login");
+            router.replace("/login");
           }
           if (error.response && error.response.status === 400 && error.response.data) {
             this.errors = error.response.data;
@@ -458,7 +458,7 @@ export default {
     async editbloodRequest(bloodRequestId) {
       this.errors = {};
       await axios
-        .get(`http://127.0.0.1:8000/api/user/request/${bloodRequestId}`, {
+        .get(`/api/user/request/${bloodRequestId}`, {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
           },
@@ -485,7 +485,7 @@ export default {
       console.log('bloodRequest :>> ', bloodRequest);
       axios
         .put(
-          `http://127.0.0.1:8000/api/user/request/${this.editedbloodRequest.id}`,
+          `/api/user/request/${this.editedbloodRequest.id}`,
           bloodRequest,
           {
             headers: {
@@ -507,7 +507,7 @@ export default {
           // if (error.response?.status === 401) {
           //   console.log("401 :>> ");
           //   this.$store.commit("LOGOUT");
-          //   router.push("/login");
+          //   router.replace("/login");
           // }
           if (error.response && error.response.status === 400 && error.response.data) {
             this.errors = error.response.data;
@@ -535,7 +535,7 @@ export default {
       if (confirm("Are you sure you want to delete this bloodRequest?")) {
         axios
           .delete(
-            `http://127.0.0.1:8000/api/user/request/${bloodRequestId}`,
+            `/api/user/request/${bloodRequestId}`,
             {
               headers: {
                 Authorization: `Bearer ${this.$store.getters.getUserToken}`,
@@ -552,7 +552,7 @@ export default {
             if (error.response?.status === 401) {
               console.log("401 :>> ");
               this.$store.commit("LOGOUT");
-              router.push("/login");
+              router.replace("/login");
             }
             if (error.response.data.message) {
               useToast().error(error.response.data.message, {
