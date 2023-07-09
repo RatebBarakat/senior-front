@@ -18,57 +18,57 @@
       <div class="table-responsive">
         <table class="table mt-4">
           <thead v-if="isLoading">
-            <tr  class="bg-blue-500 text-white">
+            <tr class="bg-blue-500 text-white">
               <th>loading...</th>
             </tr>
           </thead>
-        <thead v-else>
-          <tr class="bg-blue-500 text-white">
-            <th>status</th>
-            <th>date</th>
-            <th>time</th>
-            <th>center</th>
-            <th>bloodtype</th>
-            <th>quantity</th>
-            <th>actions</th>
-          </tr>
-        </thead>
-        <tbody v-if="isLoading">
-          <tr>
-            <td colspan="7">
-              <div class="flex items-center justify-center h-full">
-                <LoadingSnippet />
-              </div>
-            </td>
-          </tr>
-        </tbody>
+          <thead v-else>
+            <tr class="bg-blue-500 text-white">
+              <th>status</th>
+              <th>date</th>
+              <th>time</th>
+              <th>center</th>
+              <th>bloodtype</th>
+              <th>quantity</th>
+              <th>actions</th>
+            </tr>
+          </thead>
+          <tbody v-if="isLoading">
+            <tr>
+              <td colspan="7">
+                <div class="flex items-center justify-center h-full">
+                  <LoadingSnippet />
+                </div>
+              </td>
+            </tr>
+          </tbody>
 
-        <tbody v-else>
-          <tr v-if="appointments.length === 0">
-            <td>no appointments</td>
-          </tr>
-          <tr v-else v-for="appointment in appointments" :key="appointment.id">
-            <td>{{ appointment.status }}</td>
-            <td>{{ appointment.date }}</td>
-            <td>{{ appointment.time }}</td>
-            <td>{{ appointment.center?.name }}</td>
-            <td>{{ appointment.blood_type }}</td>
-            <td>{{ appointment.quantity }}</td>
-            <td>
-              <button v-if="appointment.status == 'scheduled'" @click="editAppointment(appointment.id)" 
-              class="rounded px-4 py-1 text-sm border border-green-500 text-green-500 hover:bg-green-500 hover:text-blue-100 duration-300">
-                Edit
-              </button>
-              <button v-if="appointment.status == 'scheduled'" @click="deleteAppointment(appointment.id)"
-              class="rounded px-4 py-1 text-sm border border-red-500 text-red-500 hover:bg-red-500 hover:text-blue-100 duration-300">
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+          <tbody v-else>
+            <tr v-if="appointments.length === 0">
+              <td>no appointments</td>
+            </tr>
+            <tr v-else v-for="appointment in appointments" :key="appointment.id">
+              <td>{{ appointment.status }}</td>
+              <td>{{ appointment.date }}</td>
+              <td>{{ appointment.time }}</td>
+              <td>{{ appointment.center?.name }}</td>
+              <td>{{ appointment.blood_type }}</td>
+              <td>{{ appointment.quantity }}</td>
+              <td>
+                <button v-if="appointment.status == 'scheduled'" @click="editAppointment(appointment.id)"
+                  class="rounded px-4 py-1 text-sm border border-green-500 text-green-500 hover:bg-green-500 hover:text-blue-100 duration-300">
+                  Edit
+                </button>
+                <button v-if="appointment.status == 'scheduled'" @click="deleteAppointment(appointment.id)"
+                  class="rounded px-4 py-1 text-sm border border-red-500 text-red-500 hover:bg-red-500 hover:text-blue-100 duration-300">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      
+
     </div>
   </div>
 
@@ -91,15 +91,19 @@
       </div>
       <div class="modal-body">
         <form method="post" @submit.prevent="addAppointment">
+          <div v-if="!newAppointment.date || !newAppointment.center_id" class="info text-blue-500">
+            you must choose center and date to show avaialble times
+          </div>
           <div v-if="errors && errors.general">
             <p class="text-red-500">{{ errors.general[0] }}</p>
           </div>
           <div class="mb-4">
-            <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">Center ID:</label>
+            <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">Center</label>
             <div v-if="errors && errors.center_id">
               <p class="text-red-500">{{ errors.center_id[0] }}</p>
             </div>
             <select v-model="newAppointment.center_id" id="center_id" name="center_id"
+             @change="getAvailableTime('add')"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               <option value="">Select Center</option>
               <option v-for="type in centers" :key="type.id" :value="type.id">
@@ -108,7 +112,7 @@
             </select>
           </div>
           <div class="mb-4">
-            <label for="blood_type" class="block text-gray-700 text-sm font-bold mb-2">Center ID:</label>
+            <label for="blood_type" class="block text-gray-700 text-sm font-bold mb-2">blood type</label>
             <div v-if="errors.blood_type">
               <p class="text-red-500">
                 {{ errors.blood_type[0] }}
@@ -127,23 +131,33 @@
             <div v-if="errors.date">
               <p class="text-red-500">{{ errors.date[0] }}</p>
             </div>
-            <input v-model="newAppointment.date" type="date" id="date" name="date"
+            <input v-model="newAppointment.date" type="date" id="date" name="date" @change="getAvailableTime('add')"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
           </div>
-          <div class="mb-4">
+          <div v-if="isProcessing === 'getTimes' &&
+            newAppointment.center_id &&
+            newAppointment.date">
+            get available times...
+          </div>
+          <div v-if="availableTimes.length > 0 && newAppointment.date && newAppointment.center_id" class="mb-4">
             <label for="time" class="block text-gray-700 text-sm font-bold mb-2">Time:</label>
             <div v-if="errors.time">
               <p class="text-red-500">
                 {{ errors.time[0] }}
               </p>
             </div>
-            <input v-model="newAppointment.time" type="time" id="time" name="time"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            <select v-model="newAppointment.time" id="time" name="time"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <option value="">select time</option>
+              <option v-for="time in availableTimes" :key="time" :value="time">
+                {{ time }}
+              </option>
+            </select>
           </div>
           <div class="modal-footer">
             <button :disabled="isProcessing === 'add'" type="submit" class="accept-button">
               {{ isProcessing === 'add' ? 'Processing' : 'Submit' }}
-            </button> 
+            </button>
             <button type="button" @click="isAddModalVisible = false" class="decline-button">
               close
             </button>
@@ -175,6 +189,10 @@
         </div>
         <div class="modal-body">
           <form method="post" @submit.prevent="updateAppointment">
+            <div v-if="!editedAppointment.date || !editedAppointment.center || !editedAppointment.center.id" 
+              class="info text-blue-500">
+              you must choose center and date to show avaialble times
+            </div>
             <div v-if="errors && errors.general">
               <p class="text-red-500">{{ errors.general[0] }}</p>
             </div>
@@ -183,7 +201,7 @@
               <div v-if="errors && errors.center_id">
                 <p class="text-red-500">{{ errors.center_id[0] }}</p>
               </div>
-              <select v-model="editedAppointment.center.id" id="center_id" name="center_id"
+              <select v-model="editedAppointment.center.id" id="center_id" name="center_id" @change="getAvailableTime('update')"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 <option value="">Select Center</option>
                 <option v-for="type in centers" :key="type.id" :value="type.id">
@@ -214,16 +232,26 @@
               <input v-model="editedAppointment.date" type="date" id="date" name="date"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
             </div>
-            <div class="mb-4">
-              <label for="time" class="block text-gray-700 text-sm font-bold mb-2">Time:</label>
-              <div v-if="errors.time">
-                <p class="text-red-500">
-                  {{ errors.time[0] }}
-                </p>
-              </div>
-              <input v-model="editedAppointment.time" type="time" id="time" name="time"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            <div v-if="isProcessing === 'getTimes' &&
+            editedAppointment.center_id &&
+            editedAppointment.date">
+            get available times...
+          </div>
+          <div v-if="availableTimes.length > 0 && editedAppointment.date && editedAppointment.center.id" class="mb-4">
+            <label for="time" class="block text-gray-700 text-sm font-bold mb-2">Time:</label>
+            <div v-if="errors.time">
+              <p class="text-red-500">
+                {{ errors.time[0] }}
+              </p>
             </div>
+            <select v-model="editedAppointment.time" id="time" name="time"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <option value="">select time</option>
+              <option v-for="time in availableTimes" :key="time" :value="time">
+                {{ time }}
+              </option>
+            </select>
+          </div>
             <div class="modal-footer">
               <button type="submit" class="accept-button">edit</button>
               <button type="button" @click="isEditModalVisible = false" class="decline-button">
@@ -241,7 +269,7 @@
 <script>
 import router from "@/router";
 import LoadingSnippet from "./LoadingSnippet.vue";
-import axios from "axios";
+import axios from "../axios";
 import "../css/table.css";
 import { useToast } from "vue-toastification";
 
@@ -258,6 +286,7 @@ export default {
         time: "",
         blood_type: "",
       },
+      availableTimes: {},
       editedAppointment: {},
       bloodTypes: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
       errors: {},
@@ -276,14 +305,14 @@ export default {
   },
   methods: {
     fetchCenters() {
-      axios.get("http://127.0.0.1:8000/api/centers").then((response) => {
+      axios.get("/api/centers").then((response) => {
         this.centers = response.data.data;
       });
     },
     async fetchAppointments() {
       this.isLoading = true;
       await axios
-        .get("http://127.0.0.1:8000/api/user/appointment", {
+        .get("/api/user/appointment", {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
           },
@@ -296,18 +325,51 @@ export default {
           if (error.response?.status === 401) {
             console.log("401 :>> ");
             this.$store.commit("LOGOUT");
-            router.push("/login");
+            router.replace("/login");
           }
           if (error.response?.status === 401) {
             console.log("401 :>> ");
             this.$store.commit("LOGOUT");
-            router.push("/login");
+            router.replace("/login");
           }
         })
         .finally(() => {
           this.isLoading = false;
           console.log(this.appointments);
         });
+    },
+    async getAvailableTime(type = "") {
+      // if (!this.newAppointment.center_id) {
+      //   useToast().info('please choose center to be able to get times');
+      //   return;
+      // }
+      // if (!this.newAppointment.date) {
+      //   useToast().info('please choose date to be able to get times at selected center');
+      //   return;
+      // }
+      type === "update" ? console.log('editedAppointment :>> ', this.editedAppointment) : console.log('sds :>> ');
+      let data = type === 'add' ? {
+        'date': this.newAppointment.date,
+        'center_id': this.newAppointment.center_id,
+      } : {
+        'date' : this.editedAppointment.date,
+        'center_id': this.editedAppointment.center.id,
+        'appointment_id': this.editedAppointment.id,
+      }
+      this.isProcessing = "getTimes";
+      axios.post('/api/user/appointment/availalbe-time', data, {
+        headers: {
+          Authorization: `Bearer ${this.$store.getters.getUserToken}`,
+        },
+      })
+        .then(response => {
+          this.availableTimes = response.data;
+          console.log('object :>> ', this.availableTimes);
+        }).catch(error => {
+          console.log('error :>> ', error);
+        }).finally(() => {
+          this.isProcessing = "";
+        })
     },
     showAddModal() {
       this.newAppointment.center_id = "";
@@ -320,7 +382,7 @@ export default {
       this.isProcessing = "add";
       await axios
         .post(
-          "http://127.0.0.1:8000/api/user/appointment",
+          "/api/user/appointment",
           this.newAppointment,
           {
             headers: {
@@ -339,10 +401,11 @@ export default {
           this.fetchAppointments();
         })
         .catch((error) => {
+          console.log('error :>> ', error);
           if (error.response?.status === 401) {
             console.log("401 :>> ");
             this.$store.commit("LOGOUT");
-            router.push("/login");
+            router.replace("/login");
           }
           if (
             error.response &&
@@ -359,25 +422,29 @@ export default {
     async editAppointment(appointmentId) {
       this.errors = {};
       await axios
-        .get(`http://127.0.0.1:8000/api/user/appointment/${appointmentId}`, {
+        .get(`/api/user/appointment/${appointmentId}`, {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
           },
         })
-        .then((response) => {
+        .then(async (response) => {
           if (response.data.data) {
             this.editedAppointment = response.data.data;
-            if(this.editedAppointment.status != 'scheduled'){
+            if (this.editedAppointment.status != 'scheduled') {
               useToast().info('this appointemnt is complete and cannot be edited');
               this.fetchAppointments()
-            }else this.isEditModalVisible = true;
+            } else {
+              
+            await this.getAvailableTime('update');
+            this.isEditModalVisible = true;
+          }
           }
         })
         .catch((error) => {
           if (error.response?.status === 401) {
             console.log("401 :>> ");
             this.$store.commit("LOGOUT");
-            router.push("/login");
+            router.replace("/login");
           }
           console.log("error :>> ", error);
         });
@@ -391,7 +458,7 @@ export default {
       };
       axios
         .put(
-          `http://127.0.0.1:8000/api/user/appointment/${this.editedAppointment.id}`,
+          `/api/user/appointment/${this.editedAppointment.id}`,
           appointment,
           {
             headers: {
@@ -409,7 +476,7 @@ export default {
           if (error.response?.status === 401) {
             console.log("401 :>> ");
             this.$store.commit("LOGOUT");
-            router.push("/login");
+            router.replace("/login");
           }
           if (error.response.data.message) {
             useToast().error(error.response.data.message);
@@ -423,7 +490,7 @@ export default {
       if (confirm("Are you sure you want to delete this appointment?")) {
         axios
           .delete(
-            `http://127.0.0.1:8000/api/user/appointment/${appointmentId}`,
+            `/api/user/appointment/${appointmentId}`,
             {
               headers: {
                 Authorization: `Bearer ${this.$store.getters.getUserToken}`,
@@ -439,10 +506,10 @@ export default {
           })
           .catch((error) => {
             if (error.response?.status === 401) {
-            console.log("401 :>> ");
-            this.$store.commit("LOGOUT");
-            router.push("/login");
-          }
+              console.log("401 :>> ");
+              this.$store.commit("LOGOUT");
+              router.replace("/login");
+            }
             if (error.response.data.message) {
               console.log("message :>> ");
               useToast().error(error.response.data.message, {
