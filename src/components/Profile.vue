@@ -13,7 +13,7 @@
           <h4 class="text-md font-medium leading-3">About</h4>
           <form enctype="multipart/form-data" @submit.prevent="updateProfile">
             <textarea v-model="profile.bio"
-              class="w-full focus-visible:outline-blue-500 text-sm text-stone-500"></textarea>
+              class="w-full form-input focus-visible:outline-blue-500 text-sm text-stone-500"></textarea>
             <div class="flex flex-col gap-3">
               <div class="flex items-center gap-3 px-2 py-3 bg-white rounded border w-full">
                 <div class="leading-3">
@@ -27,12 +27,12 @@
                   <p class="text-sm font-bold text-slate-700">Blood Type</p>
                 </div>
                 <select v-model="profile.blood_type" id="blood_type" name="blood_type"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                <option value="">Select Blood Type</option>
-                <option v-for="type in bloodTypes" :key="type" :value="type">
-                  {{ type }}
-                </option>
-              </select>
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">Select Blood Type</option>
+                  <option v-for="type in bloodTypes" :key="type" :value="type">
+                    {{ type }}
+                  </option>
+                </select>
               </div>
               <div class="flex items-center gap-3 px-2 py-3 bg-white rounded border w-full">
                 <div class="leading-3">
@@ -50,9 +50,10 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from "../axios";
 import LoadingSnippet from "./LoadingSnippet.vue";
 import { useToast } from "vue-toastification";
+import router from "@/router";
 
 export default {
   name: "ProfilePage",
@@ -62,21 +63,21 @@ export default {
         bio: 'no bio',
         blood_type: 'no blood type',
         location: 'no location',
-      avatar : null,
+        avatar: null,
       },
-      image : "",
+      image: "",
       bloodTypes: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
       isLoading: true,
     };
   },
 
   mounted() {
-    this.fetchProfile().then(() => {this.isLoading = false});
+    this.fetchProfile().then(() => { this.isLoading = false });
   },
   methods: {
     async fetchProfile() {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/user/profile", {
+        const response = await axios.get("/api/user/profile", {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
           },
@@ -90,35 +91,40 @@ export default {
             this.image = avatar !== null ? avatar : '';
           }
         }
-        console.log('response :>> ', response);
       } catch (error) {
-        console.log('error :>> ', error);
+        if (error.response?.status === 401) {
+          this.$store.commit("LOGOUT");
+          router.replace("/login");
+        }
       }
     },
     async updateProfile() {
-      console.log('this.profile :>> ', this.profile);
       try {
         let profile = {
           ...this.profile,
         }
-        const response = await axios.post("http://127.0.0.1:8000/api/user/profile", profile, {
+        const response = await axios.post("/api/user/profile", profile, {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
             'Content-Type': 'multipart/form-data',
           },
         });
-        console.log('Profile updated:', response);
+        console.log(response);
         useToast().success(response.data.message);
         this.fetchProfile();
       } catch (error) {
         console.log('error :>> ', error);
+        if (error.response?.status === 401) {
+          this.$store.commit("LOGOUT");
+          router.replace("/login");
+        }
       }
 
     },
     async handleAvatarChange(event) {
       const file = event.target.files[0];
       if (file) {
-          this.profile.avatar = file;
+        this.profile.avatar = file;
       }
     }
   },
