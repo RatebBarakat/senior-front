@@ -31,6 +31,7 @@
                       <div class="flex items-center justify-between">
                           <a href="#" class="text-sm font-medium text-blue-600 hover:underline dark:text-blue-500">Forgot password?</a>
                       </div>
+                      <GoogleLogin/>
                       <button v-if="!this.processing" type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sign in</button>
                       <button v-if="this.processing" disabled type="button" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">processing</button>
                       
@@ -74,54 +75,54 @@
 <script>
 import axios from "../axios";
 import router from "@/router"; 
+import GoogleLogin from "./GoogleLogin.vue";
 
 export default {
-  name: "LoginForm",
-  data() {
-    return {
-      email: "",
-      password: "",
-      error: {},
-      processing : false,
-    };
-  },
-  methods: {
-    async login(event) {
-      event.preventDefault();
-
-      const loginData = {
-        email: this.email,
-        password: this.password,
-      };
-      this.processing = true;
-      this.error = {};
-      await axios
-        .post("/api/user/login", loginData)
-        .then((response) => {
-          console.log("response",response.data);
-          const token = response.data.token;
-          const user = response.data.user;
-          localStorage.setItem("token", token);
-          this.$store.commit("SET_USER", user);
-          this.email = "";
-          this.password = "";
-          router.push("/dashboard");
-        })
-        .catch((error) => {
-          if (
-            error.response &&
-            error.response.status === 400 &&
-            error.response.data.errors
-          ) {
-            this.error = error.response.data.errors;
-          } else {
-            this.error = { general: "An error occurred. Please try again." };
-          }
-        });
-        this.password = "";
-        this.processing = false;
+    name: "LoginForm",
+    data() {
+        return {
+            email: "",
+            password: "",
+            error: {},
+            processing: false,
+        };
     },
-  },
+    methods: {
+        async login(event) {
+            event.preventDefault();
+            const loginData = {
+                email: this.email,
+                password: this.password,
+            };
+            this.processing = true;
+            this.error = {};
+            await axios
+                .post("/api/user/login", loginData)
+                .then((response) => {
+                console.log("response", response.data);
+                const token = response.data.token;
+                const user = response.data.user;
+                localStorage.setItem("token", token);
+                this.$store.commit("SET_USER", user);
+                this.email = "";
+                this.password = "";
+                router.push("/dashboard");
+            })
+                .catch((error) => {
+                if (error.response &&
+                    error.response.status === 400 &&
+                    error.response.data.errors) {
+                    this.error = error.response.data.errors;
+                }
+                else {
+                    this.error = { general: "An error occurred. Please try again." };
+                }
+            });
+            this.password = "";
+            this.processing = false;
+        },
+    },
+    components: { GoogleLogin }
 };
 </script>
 
