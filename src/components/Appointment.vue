@@ -318,6 +318,7 @@ export default {
           },
         })
         .then((response) => {
+          console.log('response :>> ', response);
           this.appointments = response.data.data;
           console.log('response.data.data :>> ', this.appointments);
         })

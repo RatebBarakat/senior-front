@@ -543,10 +543,10 @@ export default {
             }
           )
           .then((response) => {
-            this.fetchbloodRequests();
             useToast().success(response.data.message, {
               timeout: 2000,
             });
+            this.fetchbloodRequests();
           })
           .catch((error) => {
             if (error.response?.status === 401) {
