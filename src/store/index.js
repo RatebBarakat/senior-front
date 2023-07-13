@@ -7,6 +7,7 @@ const store = createStore({
     user: {
       data: {
       },
+      type : "social"
     },
   },
   getters: {
@@ -14,7 +15,8 @@ const store = createStore({
       const storedToken = localStorage.getItem("token");
       return state.user.token || storedToken || null;
     },
-    getUserData: (state) => state.user.data,
+    getUserData: (state) => {state.user.data},
+    getUserType: (state) => {return state.user.type},
   },
   actions: {
     async fetchUserData({ commit, getters }) {
@@ -36,6 +38,9 @@ const store = createStore({
   mutations: {
     SET_USER(state, user) {
       state.user.data = user;
+    },
+    SET_TYPE(state, type) {
+      state.user.type = type;
     },
     LOGOUT(state) {
       state.user.token = null;

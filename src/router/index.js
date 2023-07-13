@@ -6,6 +6,7 @@ import BloodRequest from '../components/BloodRequest.vue';
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
 import Notification from '../components/Notification.vue';
+import GoogleLogin from '../components/GoogleLogin.vue';
 import Profile from '../components/Profile.vue';
 import NotFound from '../components/NotFound.vue';
 import EmailVerification from '../components/EmailVerification.vue';
@@ -83,6 +84,14 @@ const routes = [
     path: '/register',
     name: 'register',
     component: Register,
+    meta: {
+      requireGuest: true
+    },
+  },
+  {
+    path: '/google/callback',
+    name: 'googleLogin',
+    component: GoogleLogin,
     meta: {
       requireGuest: true
     },
