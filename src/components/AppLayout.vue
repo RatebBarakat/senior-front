@@ -3,44 +3,54 @@
     <div v-if="!isLoading">
       <header class="flex p-2 items-center justify-between">
         <div class="left">
-            <button class="openbtn bg-blue-500 mt-2 bg-primary" @click="toggleSidebar">&#9776;</button>
+          <button class="openbtn bg-blue-500 mt-2 bg-primary" @click="toggleSidebar">&#9776;</button>
         </div>
         <div class="right flex items-center">
-            <div class="messages">
-                <span @click="dropdowns.notifications = !dropdowns.notifications">
-                    
-                </span>
-                <div class="user-info relative">
-                  <router-link to="notification" class="block m-2 overflow-hidden focus:outline-none text-sm leading-loose align-middle px-4 py-1 rounded cursor-pointer ">
-                    Notifications <span class="text-blue-500">[{{ unreadNotifications.length }}]</span> <i class="fa fas fa-sort-down"></i>
-                  </router-link>
-                            
-              </div>
-                
-            </div>
+          <div class="messages">
+            <span @click="dropdowns.notifications = !dropdowns.notifications">
+
+            </span>
             <div class="user-info relative">
-                <button class="block m-2 overflow-hidden focus:outline-none leading-loose align-middle px-4 py-1 rounded cursor-pointer text-sm bg-blue-500 text-white" @click="dropdowns.userInfo = !dropdowns.userInfo">
-                  {{ user.name }} <i class="fa fas fa-sort-down"></i>
-                </button>
-                <button v-if="dropdowns.userInfo" @click="dropdowns.userInfo = false" tabindex="-1" class="fixed top-0 inset-0 h-full w-full bg-black opacity-0 cursor-default"></button>
-                <div v-if="dropdowns.userInfo" class="z-20 absolute top-full right-0 mt-2 w-48 py-2 rounded-lg border-gray-900 bg-white shadow-xl">
-                  <router-link :to="{ name : 'profile' }" @click="dropdowns.userInfo = false" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">profile</router-link>
-                  <router-link to="" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">Support</router-link>
-                  <div @click="logout" class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">Sign Out</div>
-              </div>              
+              <router-link :key="$route.fullPath" to="notification"
+                class="block m-2 overflow-hidden focus:outline-none text-sm leading-loose align-middle px-4 py-1 rounded cursor-pointer ">
+                Notifications <span class="text-blue-500">[{{ notificationsCount }}]</span> <i
+                  class="fa fas fa-sort-down"></i>
+              </router-link>
+
             </div>
+
+          </div>
+          <div class="user-info relative">
+            <button
+              class="block m-2 overflow-hidden focus:outline-none leading-loose align-middle px-4 py-1 rounded cursor-pointer text-sm bg-blue-500 text-white"
+              @click="dropdowns.userInfo = !dropdowns.userInfo">
+              {{ user.name }} <i class="fa fas fa-sort-down"></i>
+            </button>
+            <button v-if="dropdowns.userInfo" @click="dropdowns.userInfo = false" tabindex="-1"
+              class="fixed top-0 inset-0 h-full w-full bg-black opacity-0 cursor-default"></button>
+            <div v-if="dropdowns.userInfo"
+              class="z-20 absolute top-full right-0 mt-2 w-48 py-2 rounded-lg border-gray-900 bg-white shadow-xl">
+              <router-link :key="$route.fullPath" :to="{ name: 'profile' }" @click="dropdowns.userInfo = false"
+                class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">profile</router-link>
+              <router-link :key="$route.fullPath" to=""
+                class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">Support</router-link>
+              <div @click="logout"
+                class="text-sm text-gray-900 hover:bg-blue-500 hover:text-white block px-4 py-2 cursor-pointer">Sign Out
+              </div>
+            </div>
+          </div>
         </div>
-    </header>
-    
+      </header>
+
       <div class="container-fluid h-screen">
-        <div id="mySidebar" class="bg-primary" :class="['sidebar','bg-blue-500', { 'sidebar-open': isSidebarOpen }]">
+        <div id="mySidebar" class="bg-primary" :class="['sidebar', 'bg-blue-500', { 'sidebar-open': isSidebarOpen }]">
           <a href="javascript:void(0)" class="closebtn" @click="toggleSidebar">&times;</a>
           <div class="mt-5">
-            <router-link :to="{ name: 'dashboard' }" @click="this.isSidebarOpen = false"
+            <router-link :key="$route.fullPath" :to="{ name: 'dashboard' }" @click="this.isSidebarOpen = false"
               :class="{ active: $route.name === 'dashboard' }" class="nav-link">Dashboard</router-link>
-            <router-link :to="{ name: 'appointment' }" @click="this.isSidebarOpen = false"
+            <router-link :key="'appointment-link'" :to="{ name: 'appointment' }" @click="this.isSidebarOpen = false"
               :class="{ active: $route.name === 'appointment' }" class="nav-link">Appointments</router-link>
-            <router-link :to="{ name: 'requests' }" @click="this.isSidebarOpen = false"
+            <router-link :key="'requests-link'" :to="{ name: 'requests' }" @click="this.isSidebarOpen = false"
               :class="{ active: $route.name === 'requests' }" class="nav-link">blood requests</router-link>
           </div>
         </div>
@@ -61,6 +71,7 @@
 import router from "@/router";
 import "../css/sidebar.css";
 import axios from "../axios";
+import { eventBus } from "../eventBus";
 
 export default {
   name: "AppLayout",
@@ -68,21 +79,26 @@ export default {
     return {
       user: {},
       isSidebarOpen: false,
-      dropdowns : {
-        userInfo : false,
-        notifications : false,
+      dropdowns: {
+        userInfo: false,
+        notifications: false,
       },
+      notificationsCount: 0,
       isLoading: true,
-      unreadNotifications : {},
+      unreadNotifications: {},
     };
   },
   mounted() {
-  this.fetchUserData()
-    .then(() => this.fetchNotifications())
-    .finally(() => {
-      this.isLoading = false;
-    });
-},
+    this.fetchUserData()
+      .then(() => this.fetchNotifications())
+      .finally(() => {
+        this.isLoading = false;
+      });
+    eventBus.on('notificationCountChange', this.updateNotificationsCount);
+  },
+  beforeUnmount() {
+    eventBus.off('notificationCountChange', this.updateNotificationsCount);
+  },
 
   computed: {
     userName() {
@@ -97,12 +113,15 @@ export default {
     },
   },
   methods: {
+    updateNotificationsCount(count) {
+      this.notificationsCount = count;
+    },
     logout() {
       this.$store.commit("LOGOUT");
       router.replace({ name: "login" });
     },
     async fetchNotifications() {
-      try{
+      try {
         const response = await axios.get("/api/user/notification?type=unread", {
           headers: {
             Authorization: `Bearer ${this.$store.getters.getUserToken}`,
@@ -110,10 +129,11 @@ export default {
         });
         console.log('response :>> ', response);
         this.unreadNotifications = response.data.data[0];
+        this.notificationsCount = this.unreadNotifications.length;
         console.log('object :>> ', this.unreadNotifications);
       } catch (error) {
         console.error("Failed :", error);
-      } 
+      }
     },
     async fetchUserData() {
       try {
@@ -153,5 +173,4 @@ export default {
   to {
     transform: rotate(360deg);
   }
-}
-</style>
+}</style>
