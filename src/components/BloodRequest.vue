@@ -2,13 +2,13 @@
   <div class="container">
     <div class="container mt-4">
       <div class="flex justify-between items-center px-3">
-        <button :disabled="isLoading == true" @click="showAddModal()"
+        <button :disabled="isLoading == true || isOnline === false" @click="showAddModal()"
           class="block text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           type="button">
           add bloodRequest
         </button>
 
-        <button :disabled="isLoading == true" @click="fetchbloodRequests" type="button">
+        <button :disabled="isLoading == true || isOnline === false" @click="reloadRequests" type="button">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#3b82f6" viewBox="0 0 24 24">
             <path
               d="M13.5 2c-5.621 0-10.211 4.443-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z" />
@@ -19,7 +19,7 @@
         <table class="table mt-4">
 
           <thead v-if="isLoading">
-            <tr  class="bg-blue-500 text-white">
+            <tr class="bg-blue-500 text-white">
               <th>loading...</th>
             </tr>
           </thead>
@@ -85,135 +85,19 @@
     </div>
   </div>
 
-  <!-- <transition name="fade"> -->
-  <div v-if="isAddModalVisible == true" class="modal modal-fade animated fadeInUp">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-          Add bloodRequest
-        </h3>
-        <button @click="isAddModalVisible = false" type="button" class="close-button">
-          <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd"
-              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-              clip-rule="evenodd"></path>
-          </svg>
-          <span class="sr-only">Close modal</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form method="post" @submit.prevent="addbloodRequest">
-          <div v-if="errors && errors.general">
-            <p class="text-red-500">{{ errors.general[0] }}</p>
-          </div>
-          <div class="mb-4">
-            <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">patient name</label>
-            <div v-if="errors && errors.patient_name">
-              <p class="text-red-500">{{ errors.patient_name[0] }}</p>
-            </div>
-            <input type="text" v-model="newbloodRequest.patient_name"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-
-          </div>
-          <div class="mb-4">
-            <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">hospital name</label>
-            <div v-if="errors && errors.hospital_name">
-              <p class="text-red-500">{{ errors.hospital_name[0] }}</p>
-            </div>
-            <input type="text" v-model="newbloodRequest.hospital_name"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-
-          </div>
-          <div class="mb-4">
-            <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">hospital location</label>
-            <div v-if="errors && errors.hospital_location">
-              <p class="text-red-500">{{ errors.hospital_location[0] }}</p>
-            </div>
-            <input type="text" v-model="newbloodRequest.hospital_location"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-          <div class="mb-4">
-            <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">contact phone number</label>
-            <div v-if="errors && errors.contact_phone_number">
-              <p class="text-red-500">{{ errors.contact_phone_number[0] }}</p>
-            </div>
-            <input type="number" v-model="newbloodRequest.contact_phone_number"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-          <div class="mb-4">
-            <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">quantity needed</label>
-            <div v-if="errors && errors.quantity_needed">
-              <p class="text-red-500">{{ errors.quantity_needed[0] }}</p>
-            </div>
-            <input type="number" v-model="newbloodRequest.quantity_needed"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-          <div class="mb-4">
-            <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">urgency level</label>
-            <div v-if="errors && errors.urgency_level">
-              <p class="text-red-500">{{ errors.urgency_level[0] }}</p>
-            </div>
-            <select v-model="newbloodRequest.urgency_level" id="urgency_level" name="urgency_level"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-              <option value="">Select Center</option>
-              <option value="immediate">immediate</option>
-              <option value="24 hours">24 hours</option>
-            </select>
-            <input type="number" v-model="newbloodRequest.urgency_level">
-          </div>
-          <div class="mb-4">
-            <label for="blood_type" class="block text-gray-700 text-sm font-bold mb-2">blood type</label>
-            <div v-if="errors.blood_type">
-              <p class="text-red-500">
-                {{ errors.blood_type[0] }}
-              </p>
-            </div>
-            <select v-model="newbloodRequest.blood_type_needed" id="blood_type" name="blood_type"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-              <option value="">Select Blood Type</option>
-              <option v-for="type in bloodTypes" :key="type" :value="type">
-                {{ type }}
-              </option>
-            </select>
-          </div>
-          <div class="mb-4">
-            <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">center</label>
-            <div v-if="errors && errors.center_id">
-              <p class="text-red-500">{{ errors.center_id[0] }}</p>
-            </div>
-            <select v-model="newbloodRequest.center_id" id="center_id" name="center_id"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-              <option value="">Select Center</option>
-              <option v-for="type in centers" :key="type.id" :value="type.id">
-                {{ type.name }}
-              </option>
-            </select>
-          </div>
-          <div class="modal-footer">
-            <button :disabled="isProcessing === 'add'" type="submit" class="accept-button">
-              {{ isProcessing === 'add' ? 'Processing' : 'Submit' }}
-            </button>
-            <button type="button" @click="isAddModalVisible = false" class="decline-button">
-              close
-            </button>
-          </div>
-        </form>
-      </div>
+  <Transition>
+    <div v-if="isAddModalVisible === true" class="modal-background">
     </div>
-  </div>
-  <!-- </transition> -->
+  </Transition>
 
-  <div v-if="Object.keys(editedbloodRequest).length !== 0">
-    <!--edit modal-->
-    <!-- <transition name="fade"> -->
-    <div v-if="isEditModalVisible == true" class="modal modal-fade animated fadeInUp">
+  <Transition>
+    <div v-if="isAddModalVisible === true" class="modal">
       <div class="modal-content">
         <div class="modal-header">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
             Add bloodRequest
           </h3>
-          <button @click="isEditModalVisible = false" type="button" class="close-button">
+          <button @click="isAddModalVisible = false" type="button" class="close-button">
             <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd"
@@ -224,98 +108,100 @@
           </button>
         </div>
         <div class="modal-body">
-          <form method="post" @submit.prevent="updatebloodRequest">
-            <div v-if="errors && errors.general">
+          <form method="post" @submit.prevent="addbloodRequest">
+            <div class="error" v-if="errors && errors.general">
               <p class="text-red-500">{{ errors.general[0] }}</p>
             </div>
-            <div class="mb-4">
-              <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">patient name</label>
-              <div v-if="errors && errors.patient_name">
-                <p class="text-red-500">{{ errors.patient_name[0] }}</p>
-              </div>
-              <input type="text" v-model="editedbloodRequest.patient_name"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-2">
+              <div class="mb-4">
+                <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">patient name</label>
+                <div class="error" v-if="errors && errors.patient_name">
+                  <p class="text-red-500">{{ errors.patient_name[0] }}</p>
+                </div>
+                <input type="text" v-model="newbloodRequest.patient_name"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
 
-            </div>
-            <div class="mb-4">
-              <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">hospital name</label>
-              <div v-if="errors && errors.hospital_name">
-                <p class="text-red-500">{{ errors.hospital_name[0] }}</p>
               </div>
-              <input type="text" v-model="editedbloodRequest.hospital_name"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <div class="mb-4">
+                <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">hospital name</label>
+                <div class="error" v-if="errors && errors.hospital_name">
+                  <p class="text-red-500">{{ errors.hospital_name[0] }}</p>
+                </div>
+                <input type="text" v-model="newbloodRequest.hospital_name"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
 
-            </div>
-            <div class="mb-4">
-              <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">hospital location</label>
-              <div v-if="errors && errors.hospital_location">
-                <p class="text-red-500">{{ errors.hospital_location[0] }}</p>
               </div>
-              <input type="text" v-model="editedbloodRequest.hospital_location"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div class="mb-4">
-              <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">contact phone number</label>
-              <div v-if="errors && errors.contact_phone_number">
-                <p class="text-red-500">{{ errors.contact_phone_number[0] }}</p>
+              <div class="mb-4">
+                <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">hospital location</label>
+                <div class="error" v-if="errors && errors.hospital_location">
+                  <p class="text-red-500">{{ errors.hospital_location[0] }}</p>
+                </div>
+                <input type="text" v-model="newbloodRequest.hospital_location"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               </div>
-              <input type="number" v-model="editedbloodRequest.contact_phone_number"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div class="mb-4">
-              <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">quantity needed</label>
-              <div v-if="errors && errors.quantity_needed">
-                <p class="text-red-500">{{ errors.quantity_needed[0] }}</p>
+              <div class="mb-4">
+                <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">contact phone number</label>
+                <div class="error" v-if="errors && errors.contact_phone_number">
+                  <p class="text-red-500">{{ errors.contact_phone_number[0] }}</p>
+                </div>
+                <input type="number" v-model="newbloodRequest.contact_phone_number"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               </div>
-              <input type="number" v-model="editedbloodRequest.quantity_needed"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div class="mb-4">
-              <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">urgency level</label>
-              <div v-if="errors && errors.urgency_level">
-                <p class="text-red-500">{{ errors.urgency_level[0] }}</p>
+              <div class="mb-4">
+                <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">quantity needed</label>
+                <div class="error" v-if="errors && errors.quantity_needed">
+                  <p class="text-red-500">{{ errors.quantity_needed[0] }}</p>
+                </div>
+                <input type="number" v-model="newbloodRequest.quantity_needed"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               </div>
-              <select v-model="editedbloodRequest.urgency_level" id="urgency_level" name="urgency_level"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                <option value="">Select Center</option>
-                <option value="immediate">immediate</option>
-                <option value="24 hours">24 hours</option>
-              </select>
-              <input type="number" v-model="editedbloodRequest.urgency_level">
-            </div>
-            <div class="mb-4">
-              <label for="blood_type" class="block text-gray-700 text-sm font-bold mb-2">blood type</label>
-              <div v-if="errors.blood_type">
-                <p class="text-red-500">
-                  {{ errors.blood_type[0] }}
-                </p>
+              <div class="mb-4">
+                <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">urgency level</label>
+                <div class="error" v-if="errors && errors.urgency_level">
+                  <p class="text-red-500">{{ errors.urgency_level[0] }}</p>
+                </div>
+                <select v-model="newbloodRequest.urgency_level" id="urgency_level" name="urgency_level"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">Select Center</option>
+                  <option value="immediate">immediate</option>
+                  <option value="24 hours">24 hours</option>
+                </select>
               </div>
-              <select v-model="editedbloodRequest.blood_type_needed" id="blood_type" name="blood_type"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                <option value="">Select Blood Type</option>
-                <option v-for="type in bloodTypes" :key="type" :value="type">
-                  {{ type }}
-                </option>
-              </select>
-            </div>
-            <div class="mb-4">
-              <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">center</label>
-              <div v-if="errors && errors.center_id">
-                <p class="text-red-500">{{ errors.center_id[0] }}</p>
+              <div class="mb-4">
+                <label for="blood_type" class="block text-gray-700 text-sm font-bold mb-2">blood type</label>
+                <div v-if="errors.blood_type_needed">
+                  <p class="text-red-500">
+                    {{ errors.blood_type_needed[0] }}
+                  </p>
+                </div>
+                <select v-model="newbloodRequest.blood_type_needed" id="blood_type" name="blood_type"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">Select Blood Type</option>
+                  <option v-for="type in bloodTypes" :key="type" :value="type">
+                    {{ type }}
+                  </option>
+                </select>
               </div>
-              <select v-model="editedbloodRequest.center.id" id="center_id" name="center_id"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                <option value="">Select Center</option>
-                <option v-for="type in centers" :key="type.id" :value="type.id">
-                  {{ type.name }}
-                </option>
-              </select>
+              <div class="mb-4">
+                <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">center</label>
+                <div class="error" v-if="errors && errors.center_id">
+                  <p class="text-red-500">{{ errors.center_id[0] }}</p>
+                </div>
+                <select v-model="newbloodRequest.center_id" id="center_id" name="center_id"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">Select Center</option>
+                  <option v-for="type in centers" :key="type.id" :value="type.id">
+                    {{ type.name }}
+                  </option>
+                </select>
+              </div>
             </div>
+
             <div class="modal-footer">
-              <button :disabled="isProcessing === 'add'" type="submit" class="accept-button">
+              <button :disabled="isProcessing === 'add' || isOnline === false" type="submit" class="accept-button">
                 {{ isProcessing === 'add' ? 'Processing' : 'Submit' }}
               </button>
-              <button type="button" @click="isEditModalVisible = false" class="decline-button">
+              <button type="button" @click="isAddModalVisible = false" class="decline-button">
                 close
               </button>
             </div>
@@ -323,7 +209,135 @@
         </div>
       </div>
     </div>
-    <!-- </transition> -->
+  </Transition>
+
+  <div v-if="Object.keys(editedbloodRequest).length !== 0">
+    <Transition>
+      <div v-if="isEditModalVisible === true" class="modal-background">
+      </div>
+    </Transition>
+    <Transition>
+      <div v-if="isEditModalVisible === true" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+              Add bloodRequest
+            </h3>
+            <button @click="isEditModalVisible = false" type="button" class="close-button">
+              <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"></path>
+              </svg>
+              <span class="sr-only">Close modal</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form method="post" @submit.prevent="updatebloodRequest">
+              <div class="error" v-if="errors && errors.general">
+                <p class="text-red-500">{{ errors.general[0] }}</p>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-2">
+                <div class="mb-4">
+                  <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">patient name</label>
+                  <div class="error" v-if="errors && errors.patient_name">
+                    <p class="text-red-500">{{ errors.patient_name[0] }}</p>
+                  </div>
+                  <input type="text" v-model="editedbloodRequest.patient_name"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+
+                </div>
+                <div class="mb-4">
+                  <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">hospital name</label>
+                  <div class="error" v-if="errors && errors.hospital_name">
+                    <p class="text-red-500">{{ errors.hospital_name[0] }}</p>
+                  </div>
+                  <input type="text" v-model="editedbloodRequest.hospital_name"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+
+                </div>
+                <div class="mb-4">
+                  <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">hospital location</label>
+                  <div class="error" v-if="errors && errors.hospital_location">
+                    <p class="text-red-500">{{ errors.hospital_location[0] }}</p>
+                  </div>
+                  <input type="text" v-model="editedbloodRequest.hospital_location"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                  <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">contact phone number</label>
+                  <div class="error" v-if="errors && errors.contact_phone_number">
+                    <p class="text-red-500">{{ errors.contact_phone_number[0] }}</p>
+                  </div>
+                  <input type="number" v-model="editedbloodRequest.contact_phone_number"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                  <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">quantity needed</label>
+                  <div class="error" v-if="errors && errors.quantity_needed">
+                    <p class="text-red-500">{{ errors.quantity_needed[0] }}</p>
+                  </div>
+                  <input type="number" v-model="editedbloodRequest.quantity_needed"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                  <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">urgency level</label>
+                  <div class="error" v-if="errors && errors.urgency_level">
+                    <p class="text-red-500">{{ errors.urgency_level[0] }}</p>
+                  </div>
+                  <select v-model="editedbloodRequest.urgency_level" id="urgency_level" name="urgency_level"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select Center</option>
+                    <option value="immediate">immediate</option>
+                    <option value="24 hours">24 hours</option>
+                  </select>
+                  <input type="number" v-model="editedbloodRequest.urgency_level">
+                </div>
+                <div class="mb-4">
+                  <label for="blood_type" class="block text-gray-700 text-sm font-bold mb-2">blood type</label>
+                  <div v-if="errors.blood_type">
+                    <p class="text-red-500">
+                      {{ errors.blood_type[0] }}
+                    </p>
+                  </div>
+                  <select v-model="editedbloodRequest.blood_type_needed" id="blood_type" name="blood_type"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select Blood Type</option>
+                    <option v-for="type in bloodTypes" :key="type" :value="type">
+                      {{ type }}
+                    </option>
+                  </select>
+                </div>
+                <div class="mb-4">
+                  <label for="center_id" class="block text-gray-700 text-sm font-bold mb-2">center</label>
+                  <div class="error" v-if="errors && errors.center_id">
+                    <p class="text-red-500">{{ errors.center_id[0] }}</p>
+                  </div>
+                  <select v-model="editedbloodRequest.center.id" id="center_id" name="center_id"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select Center</option>
+                    <option v-for="type in centers" :key="type.id" :value="type.id">
+                      {{ type.name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button :disabled="isProcessing === 'add' || isOnline === false" type="submit" class="accept-button">
+                  {{ isProcessing === 'add' ? 'Processing' : 'Submit' }}
+                </button>
+                <button type="button" @click="isEditModalVisible = false" class="decline-button">
+                  close
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </Transition>
   </div>
 </template>
 
@@ -333,11 +347,13 @@ import LoadingSnippet from "./LoadingSnippet.vue";
 import axios from "../axios";
 import "../css/table.css";
 import { useToast } from "vue-toastification";
+import { eventBus } from "@/eventBus";
 
 export default {
   name: "BLoodRequestPage",
   data() {
     return {
+      isOnline: navigator.onLine ? true : false,
       isLoading: false,
       isProcessing: "",
       bloodRequests: [],
@@ -363,6 +379,9 @@ export default {
     };
   },
   mounted() {
+    window.addEventListener('online', () => { this.isOnline = true });
+    window.addEventListener('offline', () => { this.isOnline = false });
+
     this.fetchbloodRequests();
     this.fetchCenters();
   },
@@ -371,6 +390,10 @@ export default {
     return { toast };
   },
   methods: {
+    reloadRequests() {
+      eventBus.emit('isProcessing', 'requests')
+      this.fetchbloodRequests();
+    },
     async fetchCenters() {
       await axios.get("/api/centers").then((response) => {
         this.centers = response.data.data;
@@ -386,6 +409,9 @@ export default {
         })
         .then((response) => {
           this.bloodRequests = response.data.data;
+          eventBus.emit('updateCount', {
+            'requests': this.bloodRequests.length
+          });
         })
         .catch((error) => {
           if (error.response?.status === 401) {
@@ -404,17 +430,21 @@ export default {
     },
     async addbloodRequest() {
       this.isProcessing = "add";
-      await axios
-        .post(
-          "/api/user/request",
-          this.newbloodRequest,
-          {
-            headers: {
-              Authorization: `Bearer ${this.$store.getters.getUserToken}`,
-            },
-          }
-        )
+      await axios.post(
+        "/api/user/request",
+        this.newbloodRequest,
+        {
+          headers: {
+            Authorization: `Bearer ${this.$store.getters.getUserToken}`,
+          },
+        }
+      )
         .then((response) => {
+          console.log('response :>> ', response);
+          this.isAddModalVisible = false;
+          useToast().success(response.data.message, {
+            timeout: 2000,
+          });
           this.newbloodRequest = {
             patient_name: "",
             hospital_name: "",
@@ -427,27 +457,25 @@ export default {
             status: "",
             center_id: "",
           }
-          useToast().success(response.data.message, {
-            timeout: 2000,
-          });
+          this.reloadRequests();
           this.isProcessing = "";
-          this.isAddModalVisible = false;
-          this.fetchbloodRequests();
         })
         .catch((error) => {
+          console.log(error);
           if (error.response?.status === 401) {
             console.log("401 :>> ");
             this.$store.commit("LOGOUT");
             router.replace("/login");
           }
-          if (error.response && error.response.status === 400 && error.response.data) {
+          if (error.response && error.response.status === 412 && error.response.data) {
             this.errors = error.response.data;
-          } else {
-            if (error.response.data.message) {
-              useToast().info(error.response.data.message);
-            }
+          }
+          if (error.response.data.message) {
+            console.log('error.response.data.message :>> ', error.response.data.message);
             if (error.response.data.availabe_center) {
               this.newbloodRequest.center_id = error.response.data.availabe_center.id;
+              useToast().info(error.response.data.message);
+            } else {
               useToast().info(error.response.data.message);
             }
           }
@@ -467,15 +495,20 @@ export default {
           if (response.data.data) {
             this.editedbloodRequest = response.data.data;
             if (this.editedbloodRequest.status != "pending") {
-              useToast().info('this request is completed so you cannot edit it');
+              useToast().info('This request is completed, so you cannot edit it.');
               this.fetchbloodRequests();
-            } else this.isEditModalVisible = true;
+            } else {
+              this.$nextTick(() => {
+                this.isEditModalVisible = true; // Set the modal visibility inside $nextTick
+              });
+            }
           }
         })
         .catch((error) => {
           console.log("error :>> ", error);
         });
     },
+
     updatebloodRequest() {
       this.isProcessing = "edit";
       let bloodRequest = {
@@ -503,26 +536,20 @@ export default {
           this.fetchbloodRequests();
         })
         .catch((error) => {
-          console.log(error.response?.status);
-          // if (error.response?.status === 401) {
-          //   console.log("401 :>> ");
-          //   this.$store.commit("LOGOUT");
-          //   router.replace("/login");
-          // }
-          if (error.response && error.response.status === 400 && error.response.data) {
+          if (error.response?.status === 401) {
+            console.log("401 :>> ");
+            this.$store.commit("LOGOUT");
+            router.replace("/login");
+          }
+          if (error.response && error.response.status === 412 && error.response.data) {
             this.errors = error.response.data;
-            if (error.response.data.message) {
-              useToast().info(error.response.data.message);
-            }
-          } else {
+          }
+          if (error.response.data.message) {
             if (error.response.data.availabe_center) {
               this.editedbloodRequest.center.id = error.response.data.availabe_center.id;
-              const errorMessage = error.response.data.message.replace(/\n/g, ' ');
+              const errorMessage = error.response.data.message.replace(/\n/g, ' ');//remove unneded /n
               const toastMessage = `${errorMessage} we choose the center ${this.editedbloodRequest.center.name} it has the needed quantity. Resubmit to proceed.`;
               useToast().info(toastMessage);
-            }
-            if (error.response.message) {
-              useToast().info(error.response.message);
             }
           }
           console.log(error);
@@ -533,20 +560,19 @@ export default {
     },
     deletebloodRequest(bloodRequestId) {
       if (confirm("Are you sure you want to delete this bloodRequest?")) {
-        axios
-          .delete(
-            `/api/user/request/${bloodRequestId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${this.$store.getters.getUserToken}`,
-              },
-            }
-          )
+        axios.delete(
+          `/api/user/request/${bloodRequestId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${this.$store.getters.getUserToken}`,
+            },
+          }
+        )
           .then((response) => {
             useToast().success(response.data.message, {
               timeout: 2000,
             });
-            this.fetchbloodRequests();
+            this.reloadRequests();
           })
           .catch((error) => {
             if (error.response?.status === 401) {
@@ -564,9 +590,9 @@ export default {
     },
     getStatusClass(status) {
       if (status === 'cancelled') {
-        return 'h-1/2 px-2 py-1 text-sm text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-400';
+        return 'h-1/2 px-2 py-1 text-sm text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-412';
       } else if (status === 'fulfilled') {
-        return 'h-1/2 px-2 py-1 text-sm text-green-800 rounded-lg bg-green-100 dark:bg-gray-800 dark:text-green-400';
+        return 'h-1/2 px-2 py-1 text-sm text-green-800 rounded-lg bg-green-100 dark:bg-gray-800 dark:text-green-412';
       } else {
         return 'h-1/2 px-2 py-1 text-sm text-yellow-800 rounded-lg bg-yellow-100 dark:bg-gray-800 dark:text-yellow-300"';
       }
@@ -579,17 +605,26 @@ export default {
 </script>
 
 <style>
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
+.v-enter-active,
+.v-leave-active {
+  transition: opacity .2s ease-in-out, transform .3s ease-out;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 500ms ease-out;
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+  transform: translateY(-40%);
+}
+
+.modal-content{
+  width: min(650px,90%) !important;
 }
 
 button:disabled {
   cursor: not-allowed;
+}
+
+.error{
+  display: inline-block;
 }
 </style>

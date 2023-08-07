@@ -17,7 +17,7 @@
           <p class="text-sm text-gray-500">There are no notifications to display at the moment.</p>
         </div>
       </div>
-      <div v-else>
+      <div v-show="!isLoading" v-else>
         <div class="flex flex-wrap" v-for="notification in notifications" :key="notification.id">
           <div class="w-full rounded py-3 px-4 border bg-white border-gray-200 text-slate-500 flex justify-between items-center">
             <span>{{ notification.data.message }}</span>

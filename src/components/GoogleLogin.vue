@@ -25,6 +25,7 @@ export default {
             const params = {
                 code: this.$route.query.code,
             };
+            this.$route.query.code = "";
             axios.post("/api/auth/google/callback", params)
                 .then(response => {
                     console.log("response :", response);
@@ -48,7 +49,6 @@ export default {
         loginWithProvider(provider) {
             axios.get(`/api/auth/${provider}`)
                 .then(response => {
-                    console.log("response :", response);
                     window.location.href = response.data.url;
                 })
                 .catch(error => {

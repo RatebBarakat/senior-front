@@ -10,6 +10,7 @@ import GoogleLogin from '../components/GoogleLogin.vue';
 import Profile from '../components/Profile.vue';
 import NotFound from '../components/NotFound.vue';
 import EmailVerification from '../components/EmailVerification.vue';
+import ResetPassword from '../components/ResetPassword.vue';
 import store from '../store/index';
 
 const routes = [
@@ -92,6 +93,14 @@ const routes = [
     path: '/google/callback',
     name: 'googleLogin',
     component: GoogleLogin,
+    meta: {
+      requireGuest: true
+    },
+  },
+  {
+    path: '/reset',
+    name: 'resetPass',
+    component: ResetPassword,
     meta: {
       requireGuest: true
     },
